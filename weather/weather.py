@@ -2,15 +2,15 @@ from weather.constant import GEOCODING_URL, WEATHER_URL
 import requests
 
         
-
+class NotFoundException(Exception):
+    pass
 
 def get_city_coordinates(city_name: str):
     url = GEOCODING_URL + f'name={city_name}'
     response = requests.get(url)
     data = response.json()
     if not data.get('results', None):
-        raise Exception(f"City '{city_name}' not found.")
-
+        raise NotFoundException
     return data['results'][0]
 
 def get_weather(city_name: str):
@@ -18,9 +18,11 @@ def get_weather(city_name: str):
     # First we need to get the latitude and longitude of the city
     try:
         coordinates = get_city_coordinates(city_name)
+    except NotFoundException:
+        return f'City {city_name} not found'
     except:
-        return 'Some error occured. Please try again Later.'
-    
+        return 'Some error occurred. Please try again Later.'
+
     latitude = coordinates['latitude']
     longitude = coordinates['longitude']
 
@@ -31,7 +33,7 @@ def get_weather(city_name: str):
         weather_response = requests.get(weather_url)
         weather_data = weather_response.json()
     except:
-        return 'Some error occured. Please try again Later.'
+        return 'Some error occurred. Please try again Later.'
 
 
     if 'current' not in weather_data:
